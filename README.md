@@ -65,7 +65,7 @@ A modern, responsive library management system built with React, TypeScript, and
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/readora-client.git
+   git clone https://github.com/Nifazur/Readora-Library-Management-System-Client.git
    cd readora-client
    ```
 
