@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookPlus, CheckCircle, AlertCircle, Minus, Plus, ArrowLeft, X } from 'lucide-react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { useGetBookQuery } from '@/Redux/api/booksApi';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useBorrowBookMutation, type BorrowInput} from '@/Redux/api/borrowApi';
@@ -14,6 +14,7 @@ import { Helmet } from 'react-helmet';
 import BorrowBookSkeleton from '@/Library-App/0.Components/Skeleton/BorrowBookSkeleton';
 
 const BorrowBook = () => {
+    const location = useLocation()
     useEffect(() => {
         window.scroll(0,0)
     },[])
@@ -34,7 +35,7 @@ const BorrowBook = () => {
     if (!book) return <p>No book found.</p>;
 
 
-
+    const redirectTo = location.state?.from || '/';
 
     const handleQuantityChange = (newQuantity: number) => {
         if (newQuantity >= 1 && newQuantity <= book.copies) {
@@ -105,7 +106,7 @@ const BorrowBook = () => {
                     <div className="max-w-4xl mx-auto px-6 py-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <Link to={'/'} className="flex items-center gap-2 text-gray-600 hover:text-indigo-600 transition-colors">
+                                <Link to={redirectTo} className="flex items-center gap-2 text-gray-600 hover:text-indigo-600 transition-colors">
                                     <ArrowLeft className="h-5 w-5" />
                                     <span className="font-medium">Back to Library</span>
                                 </Link>

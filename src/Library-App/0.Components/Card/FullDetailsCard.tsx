@@ -1,5 +1,5 @@
 
-import { useGetBookQuery } from '@/Redux/api/booksApi';
+import { useDeleteBookMutation, useGetBookQuery } from '@/Redux/api/booksApi';
 import { skipToken } from '@reduxjs/toolkit/query';
 import {
     Copy,
@@ -14,20 +14,62 @@ import {
     Share2,
 } from 'lucide-react';
 
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import FullDetailsCardSkeleton from '../Skeleton/FullDetailsCardSkeleton';
+import Swal from 'sweetalert2';
+import { useEffect } from 'react';
 
 const FullDetailsCard = () => {
+    useEffect(() => {
+        window.scroll(0,0)
+    },[])
+    const location = useLocation();
     const { id } = useParams();
-    
+
 
     const { data: book, isError, error, isLoading } = useGetBookQuery(id ?? skipToken);
-    if(isLoading) return <FullDetailsCardSkeleton></FullDetailsCardSkeleton>
+    const [deleteBook,] = useDeleteBookMutation();
+    if (isLoading) return <FullDetailsCardSkeleton></FullDetailsCardSkeleton>
     if (isError) return <p>Error: {JSON.stringify(error)}</p>
 
-    if (!book) return <p>No book found</p>; 
+    if (!book) return <p>No book found</p>;
 
-    const { image, title, author, genre, isbn, description, copies, available } = book;
+    const { _id, image, title, author, genre, isbn, description, copies, available } = book;
+
+
+
+
+    const handleDelete = async (id: string) => {
+        const confirm = await Swal.fire({
+            title: 'Are you sure?',
+            text: 'This book will be permanently deleted!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+        });
+
+        if (confirm.isConfirmed) {
+            try {
+                await deleteBook(id).unwrap();
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Book deleted!',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Delete failed!',
+                    text: 'Something went wrong.',
+                });
+                console.error('Delete error:', error);
+            }
+        }
+    };
+
+    const redirectTo = location.state?.from || '/';
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
@@ -35,7 +77,7 @@ const FullDetailsCard = () => {
             <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-200/50">
                 <div className="max-w-7xl mx-auto px-6 py-4">
                     <div className="flex items-center justify-between">
-                        <Link to={'/'} className="flex items-center gap-3 text-gray-600 hover:text-indigo-600 transition-all duration-200 group">
+                        <Link to={redirectTo} className="flex items-center gap-3 text-gray-600 hover:text-indigo-600 transition-all duration-200 group">
                             <div className="p-2 rounded-full bg-gray-100 group-hover:bg-indigo-100 transition-colors">
                                 <ArrowLeft className="h-4 w-4" />
                             </div>
@@ -153,24 +195,26 @@ const FullDetailsCard = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <button className="px-6 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors font-medium">
+                        <Link to={`/edit-book/${book._id}`} className="px-6 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors font-medium">
                             <Edit className="h-4 w-4 inline mr-2" />
                             Edit
-                        </button>
-                        <button className="px-6 py-2 text-red-700 hover:bg-red-50 rounded-lg transition-colors font-medium">
+                        </Link>
+                        <button onClick={() => handleDelete(_id)} className="px-6 py-2 text-red-700 hover:bg-red-50 rounded-lg transition-colors font-medium">
                             <Trash2 className="h-4 w-4 inline mr-2" />
                             Delete
                         </button>
-                        <button
-                            className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 ${available
-                                ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg hover:shadow-xl'
-                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                }`}
-                            disabled={!available}
-                        >
-                            <BookPlus className="h-5 w-5 inline mr-2" />
-                            {available ? 'Borrow Now' : 'Not Available'}
-                        </button>
+                        <Link to={`/borrow/${_id}`} state={{ from: location.pathname }}>
+                            <button
+                                className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 ${available
+                                    ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg hover:shadow-xl'
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    }`}
+                                disabled={!available}
+                            >
+                                <BookPlus className="h-5 w-5 inline mr-2" />
+                                {available ? 'Borrow Now' : 'Not Available'}
+                            </button>
+                        </Link>
                     </div>
                 </div>
             </div>

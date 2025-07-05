@@ -10,13 +10,14 @@ import { useDeleteBookMutation, useGetBooksQuery } from "@/Redux/api/booksApi";
 import { Book, BookOpen, Edit, Plus, Trash2 } from "lucide-react";
 import type { IBook } from "@/Interfaces/IBook";
 import { TableRowSkeleton } from "@/Library-App/0.Components/Skeleton/TableRowSkeleton";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import { Helmet } from "react-helmet";
 
 
 
 export default function BooksPage() {
+    const location = useLocation();
     const [deleteBook,] = useDeleteBookMutation();
     const [page, setPage] = useState(1);
     const limit = 10;
@@ -122,9 +123,11 @@ export default function BooksPage() {
                                             ))
                                             : books.map((book: IBook) => (
                                                 <tr key={book._id} className="hover:bg-gray-50">
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="text-sm font-medium text-gray-900">{book.title}</div>
-                                                    </td>
+                                                    <Link to={`/books/${book._id}`} state={{ from: location.pathname }}>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <div className="text-sm font-medium text-gray-900">{book.title}</div>
+                                                        </td>
+                                                    </Link>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="text-sm text-gray-900">{book.author}</div>
                                                     </td>
